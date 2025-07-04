@@ -58,7 +58,9 @@ module apb4_ps2 (
 
   always_comb begin
     s_cnt_d = s_cnt_q;
-    if (s_clk_fe) begin
+    if (~s_bit_en) begin
+      s_cnt_d = '0;
+    end else if (s_clk_fe) begin
       if (s_cnt_q == 4'd10) begin
         s_cnt_d = '0;
       end else begin
@@ -76,7 +78,7 @@ module apb4_ps2 (
 
   always_comb begin
     s_dat_d = s_dat_q;
-    if (s_clk_fe) begin
+    if (s_bit_en && s_clk_fe) begin
       if (s_cnt_q < 4'd10) begin
         s_dat_d[s_cnt_q] = ps2.ps2_dat_i;
       end
@@ -102,11 +104,11 @@ module apb4_ps2 (
   end
   fifo #(
       .DATA_WIDTH  (8),
-      .BUFFER_DEPTH(16)
+      .BUFFER_DEPTH(8)
   ) u_ps2_fifo (
       .clk_i  (apb4.pclk),
       .rst_n_i(apb4.presetn),
-      .flush_i(1'b0),
+      .flush_i(~s_bit_en),
       .full_o (),
       .empty_o(s_fifo_empty),
       .cnt_o  (),

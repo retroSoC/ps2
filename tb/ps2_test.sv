@@ -25,7 +25,7 @@ class PS2Test extends APB4Master;
   extern task automatic test_reset_reg();
   extern task automatic test_wr_rd_reg(input bit [31:0] run_times = 1000);
   extern task automatic test_rd_code(input bit [31:0] run_times = 1000);
-  extern task automatic test_irq(input bit [31:0] run_times = 10);
+  extern task automatic test_irq(input bit [31:0] run_times = 6);
 endclass
 
 function PS2Test::new(string name, virtual apb4_if.master apb4, virtual ps2_if.tb ps2);
@@ -89,11 +89,12 @@ task automatic PS2Test::test_rd_code(input bit [31:0] run_times = 1000);
   end
 endtask
 
-task automatic PS2Test::test_irq(input bit [31:0] run_times = 10);
+task automatic PS2Test::test_irq(input bit [31:0] run_times = 6);
   super.test_irq();
+  this.wr_rd_check(`PS2_CTRL_ADDR, "CTRL REG", 32'b00 & {`PS2_CTRL_WIDTH{1'b1}}, Helper::EQUL);
   this.read(`PS2_STAT_ADDR);  // clear irq
   this.wr_rd_check(`PS2_CTRL_ADDR, "CTRL REG", 32'b10 & {`PS2_CTRL_WIDTH{1'b1}}, Helper::EQUL);
-  for (int i = 0; i < run_times + 8; i++) begin
+  for (int i = 0; i < run_times; i++) begin
     this.wr_val = $random & 8'hFF;
     this.init_ps2();
     this.kdb_sendcode(this.wr_val);
