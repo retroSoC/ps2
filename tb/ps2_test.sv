@@ -87,6 +87,11 @@ task automatic PS2Test::test_rd_code(input bit [31:0] run_times = 1000);
     #20;
     this.rd_check(`PS2_DATA_ADDR, "DATA REG", this.wr_val, Helper::EQUL);
   end
+  this.kdb_sendcode(8'h76);
+  this.rd_check(`PS2_DATA_ADDR, "DATA REG", this.wr_val, Helper::EQUL);
+  this.kdb_sendcode(8'h0F);
+  this.kdb_sendcode(8'h76);
+
 endtask
 
 task automatic PS2Test::test_irq(input bit [31:0] run_times = 6);
