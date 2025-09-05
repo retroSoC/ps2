@@ -8,6 +8,7 @@
 // MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 // See the Mulan PSL v2 for more details.
 
+/*
 module apb4_ps2_mouse (
     // verilog_format: off
     apb4_if.slave apb4,
@@ -72,3 +73,4 @@ module apb4_ps2_mouse (
   assign apb4.pslerr = 1'b0;
 
 endmodule
+*/

@@ -8,13 +8,29 @@
 // MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 // See the Mulan PSL v2 for more details.
 
+`include "apb4_if.svh"
 `include "ps2_define.svh"
 
 // only support keyboard now
 module apb4_ps2 (
+`ifdef __VERILOG__
+    `apb4_slave_if(apb4),
+    input  ps2_ps2_clk_i,
+    input  ps2_ps2_dat_i,
+    output ps2_irq_o
+`else
     apb4_if.slave apb4,
     ps2_if.dut    ps2
+`endif
 );
+
+`ifndef __VERILOG__
+  `apb4_slave_if2wire(apb4, apb4);
+  logic ps2_ps2_clk_i = ps2.ps2_clk_i;
+  logic ps2_ps2_dat_i = ps2.ps2_dat_i;
+  logic ps2_irq_o;
+  assign ps2.irq_o = ps2_irq_o;
+`endif
 
   logic [3:0] s_apb4_addr;
   logic s_apb4_wr_hdshk, s_apb4_rd_hdshk;
@@ -28,31 +44,31 @@ module apb4_ps2 (
   logic [7:0] s_fifo_rd_dat;
   logic s_bit_itn, s_bit_en, s_bit_itf, s_clk_fe, s_irq_trg;
 
-  assign s_apb4_addr     = apb4.paddr[5:2];
-  assign s_apb4_wr_hdshk = apb4.psel && apb4.penable && apb4.pwrite;
-  assign s_apb4_rd_hdshk = apb4.psel && apb4.penable && (~apb4.pwrite);
-  assign apb4.pready     = 1'b1;
-  assign apb4.pslverr    = 1'b0;
+  assign s_apb4_addr     = apb4_paddr[5:2];
+  assign s_apb4_wr_hdshk = apb4_psel && apb4_penable && apb4_pwrite;
+  assign s_apb4_rd_hdshk = apb4_psel && apb4_penable && (~apb4_pwrite);
+  assign apb4_pready     = 1'b1;
+  assign apb4_pslverr    = 1'b0;
 
   assign s_bit_itn       = s_ps2_ctrl_q[0];
   assign s_bit_en        = s_ps2_ctrl_q[1];
   assign s_bit_itf       = s_ps2_stat_q[0];
-  assign ps2.irq_o       = s_bit_itf;
+  assign ps2_irq_o       = s_bit_itf;
 
   assign s_ps2_ctrl_en   = s_apb4_wr_hdshk && s_apb4_addr == `PS2_CTRL;
-  assign s_ps2_ctrl_d    = apb4.pwdata[`PS2_CTRL_WIDTH-1:0];
+  assign s_ps2_ctrl_d    = apb4_pwdata[`PS2_CTRL_WIDTH-1:0];
   dffer #(`PS2_CTRL_WIDTH) u_ps2_ctrl_dffer (
-      apb4.pclk,
-      apb4.presetn,
+      apb4_pclk,
+      apb4_presetn,
       s_ps2_ctrl_en,
       s_ps2_ctrl_d,
       s_ps2_ctrl_q
   );
 
   edge_det_fe #(2, 1) u_ps2_clk_edge_det_fe (
-      apb4.pclk,
-      apb4.presetn,
-      ps2.ps2_clk_i,
+      apb4_pclk,
+      apb4_presetn,
+      ps2_ps2_clk_i,
       s_clk_fe
   );
 
@@ -69,8 +85,8 @@ module apb4_ps2 (
     end
   end
   dffer #(4) u_cnt_dffer (
-      apb4.pclk,
-      apb4.presetn,
+      apb4_pclk,
+      apb4_presetn,
       s_clk_fe,
       s_cnt_d,
       s_cnt_q
@@ -80,13 +96,13 @@ module apb4_ps2 (
     s_dat_d = s_dat_q;
     if (s_bit_en && s_clk_fe) begin
       if (s_cnt_q < 4'd10) begin
-        s_dat_d[s_cnt_q] = ps2.ps2_dat_i;
+        s_dat_d[s_cnt_q] = ps2_ps2_dat_i;
       end
     end
   end
   dffer #(10) u_dat_dffer (
-      apb4.pclk,
-      apb4.presetn,
+      apb4_pclk,
+      apb4_presetn,
       s_clk_fe,
       s_dat_d,
       s_dat_q
@@ -96,7 +112,7 @@ module apb4_ps2 (
     s_fifo_push_valid = 1'b0;
     if (s_bit_en && s_clk_fe) begin
       if (s_cnt_q == 4'd10) begin
-        if (s_dat_q[0] == 1'b0 && ps2.ps2_dat_i && (^s_dat_q[9:1])) begin
+        if (s_dat_q[0] == 1'b0 && ps2_ps2_dat_i && (^s_dat_q[9:1])) begin
           s_fifo_push_valid = 1'b1;
         end
       end
@@ -106,8 +122,8 @@ module apb4_ps2 (
       .DATA_WIDTH  (8),
       .BUFFER_DEPTH(8)
   ) u_ps2_fifo (
-      .clk_i  (apb4.pclk),
-      .rst_n_i(apb4.presetn),
+      .clk_i  (apb4_pclk),
+      .rst_n_i(apb4_presetn),
       .flush_i(~s_bit_en),
       .full_o (),
       .empty_o(s_fifo_empty),
@@ -129,8 +145,8 @@ module apb4_ps2 (
     end
   end
   dffer #(`PS2_STAT_WIDTH) u_ps2_stat_dffer (
-      apb4.pclk,
-      apb4.presetn,
+      apb4_pclk,
+      apb4_presetn,
       s_ps2_stat_en,
       s_ps2_stat_d,
       s_ps2_stat_q
@@ -138,13 +154,13 @@ module apb4_ps2 (
 
   // verilog_format: off
   always_comb begin
-    apb4.prdata = '0;
+    apb4_prdata = '0;
     if (s_apb4_rd_hdshk) begin
       unique case (s_apb4_addr)
-        `PS2_CTRL: apb4.prdata[`PS2_CTRL_WIDTH-1:0] = s_ps2_ctrl_q;
-        `PS2_DATA: apb4.prdata[`PS2_DATA_WIDTH-1:0] = (s_fifo_empty || ~s_bit_en) ? '0 : s_fifo_rd_dat;
-        `PS2_STAT: apb4.prdata[`PS2_STAT_WIDTH-1:0] = s_ps2_stat_q;
-        default:   apb4.prdata = '0;
+        `PS2_CTRL: apb4_prdata[`PS2_CTRL_WIDTH-1:0] = s_ps2_ctrl_q;
+        `PS2_DATA: apb4_prdata[`PS2_DATA_WIDTH-1:0] = (s_fifo_empty || ~s_bit_en) ? '0 : s_fifo_rd_dat;
+        `PS2_STAT: apb4_prdata[`PS2_STAT_WIDTH-1:0] = s_ps2_stat_q;
+        default:   apb4_prdata = '0;
       endcase
     end
   end
