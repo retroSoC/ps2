@@ -149,9 +149,10 @@ module ps2_tx (
     end
   end
 
-  dffer #(
-      .DATA_WIDTH($bits(state_t))
-  ) u_state_dffer (
+  dffercn #(
+      .REG_TYPE (state_t),
+      .RESET_VAL(ST_IDLE)
+  ) u_state_dffercn (
       .clk_i  (clk_i),
       .rst_n_i(rst_n_i),
       .en_i   (1'b1),
