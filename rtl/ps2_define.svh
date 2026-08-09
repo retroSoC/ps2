@@ -1,46 +1,64 @@
-// Copyright (c) 2023-2024 Miao Yuchi <miaoyuchi@ict.ac.cn>
-// ps2 is licensed under Mulan PSL v2.
-// You can use this software according to the terms and conditions of the Mulan PSL v2.
-// You may obtain a copy of Mulan PSL v2 at:
-//             http://license.coscl.org.cn/MulanPSL2
-// THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
-// EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
-// MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
-// See the Mulan PSL v2 for more details.
+// Copyright (c) 2023-2026 Yuchi Miao <miaoyuchi@ict.ac.cn>
+// SPDX-License-Identifier: MulanPSL-2.0
 
-`ifndef INC_PS2_DEF_SVH
-`define INC_PS2_DEF_SVH
-
-/* register mapping
- * PS2_CTRL:
- * BITS:   | 31:2 | 1  | 0   |
- * FIELDS: | RES  | EN | ITN |
- * PERMS:  | NONE | RW | RW  |
- * ---------------------------
- * PS2_DATA:
- * BITS:   | 31:8 | 7:0  |
- * FIELDS: | RES  | DATA |
- * PERMS:  | NONE | RO   |
- * ---------------------------
- * PS2_STAT:
- * BITS:   | 31:1 | 0   |
- * FIELDS: | RES  | ITF |
- * PERMS:  | NONE | RO  |
- * ---------------------------
-*/
+`ifndef PS2_DEFINE_SVH
+`define PS2_DEFINE_SVH
 
 // verilog_format: off
-`define PS2_CTRL 4'b0000 // BASEADDR + 0x00
-`define PS2_DATA 4'b0001 // BASEADDR + 0x04
-`define PS2_STAT 4'b0010 // BASEADDR + 0x08
+`define PS2_CTRL_OFFSET             12'h000
+`define PS2_STATUS_OFFSET           12'h004
+`define PS2_RXDATA_OFFSET           12'h008
+`define PS2_TXDATA_OFFSET           12'h00C
+`define PS2_FIFO_STATUS_OFFSET      12'h010
+`define PS2_FIFO_CTRL_OFFSET        12'h014
+`define PS2_RX_WATERMARK_OFFSET     12'h018
+`define PS2_TX_WATERMARK_OFFSET     12'h01C
+`define PS2_FILTER_OFFSET           12'h020
+`define PS2_INHIBIT_CYCLES_OFFSET   12'h024
+`define PS2_FRAME_TIMEOUT_OFFSET    12'h028
+`define PS2_COMMAND_OFFSET          12'h02C
+`define PS2_ERROR_STATUS_OFFSET     12'h030
+`define PS2_INTR_STATE_OFFSET       12'h034
+`define PS2_INTR_ENABLE_OFFSET      12'h038
+`define PS2_INTR_TEST_OFFSET        12'h03C
+`define PS2_IP_ID_OFFSET            12'h0F4
+`define PS2_IP_VERSION_OFFSET       12'h0F8
+`define PS2_CAPABILITY_OFFSET       12'h0FC
 
-`define PS2_CTRL_ADDR {26'b0, `PS2_CTRL, 2'b00}
-`define PS2_DATA_ADDR {26'b0, `PS2_DATA, 2'b00}
-`define PS2_STAT_ADDR {26'b0, `PS2_STAT, 2'b00}
+`define PS2_CTRL_ENABLE_MASK        32'h0000_0001
+`define PS2_CTRL_VALID_MASK         32'h0000_0001
 
-`define PS2_CTRL_WIDTH 2
-`define PS2_DATA_WIDTH 8
-`define PS2_STAT_WIDTH 1
+`define PS2_FIFO_CTRL_RX_FLUSH_MASK 32'h0000_0001
+`define PS2_FIFO_CTRL_TX_FLUSH_MASK 32'h0000_0002
+`define PS2_FIFO_CTRL_VALID_MASK    32'h0000_0003
+
+`define PS2_COMMAND_ABORT_MASK      32'h0000_0001
+`define PS2_COMMAND_SOFT_RESET_MASK 32'h0000_0002
+`define PS2_COMMAND_VALID_MASK      32'h0000_0003
+
+`define PS2_RX_ERROR_START_MASK     32'h0000_0001
+`define PS2_RX_ERROR_PARITY_MASK    32'h0000_0002
+`define PS2_RX_ERROR_STOP_MASK      32'h0000_0004
+`define PS2_RX_ERROR_TIMEOUT_MASK   32'h0000_0008
+`define PS2_RX_ERROR_OVERFLOW_MASK  32'h0000_0010
+`define PS2_TX_ERROR_TIMEOUT_MASK   32'h0000_0020
+`define PS2_TX_ERROR_NO_ACK_MASK    32'h0000_0040
+`define PS2_TX_ERROR_ABORTED_MASK   32'h0000_0080
+`define PS2_BUS_ERROR_STUCK_MASK    32'h0000_0100
+`define PS2_ERROR_VALID_MASK        32'h0000_01FF
+
+`define PS2_INTR_RX_WATERMARK_MASK  32'h0000_0001
+`define PS2_INTR_TX_WATERMARK_MASK  32'h0000_0002
+`define PS2_INTR_TX_DONE_MASK       32'h0000_0004
+`define PS2_INTR_RX_ERROR_MASK      32'h0000_0008
+`define PS2_INTR_TX_ERROR_MASK      32'h0000_0010
+`define PS2_INTR_BUS_ERROR_MASK     32'h0000_0020
+`define PS2_INTR_VALID_MASK         32'h0000_003F
+
+`define PS2_IP_ID_VALUE             32'h5053_3232
+`define PS2_IP_VERSION_VALUE        32'h0002_0000
+`define PS2_CAPABILITY_FEATURES     8'h3F
+`define PS2_ABI_VERSION             8'h02
 // verilog_format: on
 
 `endif

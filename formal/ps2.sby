@@ -1,0 +1,13 @@
+[options]
+mode prove
+depth 24
+
+[engines]
+smtbmc bitwuzla
+
+[script]
+read -formal ps2_formal.v
+prep -top ps2_formal
+
+[files]
+build/formal-src/ps2_formal.v
