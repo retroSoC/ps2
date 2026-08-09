@@ -8,8 +8,7 @@ module ps2_filter (
     input  logic [1:0] async_i,
     input  logic [3:0] stable_cycles_i,
     output logic [1:0] filtered_o,
-    output logic [1:0] rise_o,
-    output logic [1:0] fall_o
+    output logic       ps2_clk_fall_o
     // verilog_format: on
 );
 
@@ -65,8 +64,7 @@ module ps2_filter (
     );
   end
 
-  assign filtered_o = s_filtered_q;
-  assign rise_o     = ~s_filtered_q & s_filtered_d;
-  assign fall_o     = s_filtered_q & ~s_filtered_d;
+  assign filtered_o     = s_filtered_q;
+  assign ps2_clk_fall_o = s_filtered_q[0] && !s_filtered_d[0];
 
 endmodule

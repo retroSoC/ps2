@@ -43,8 +43,7 @@ module ps2_core #(
   localparam int TX_COUNT_WIDTH = $clog2(TX_FIFO_DEPTH) + 1;
 
   logic [               1:0] s_filtered_lines;
-  logic [               1:0] s_line_rise;
-  logic [               1:0] s_line_fall;
+  logic                      s_ps2_clk_fall;
   logic                      s_rx_frame_event;
   logic [               7:0] s_rx_frame_data;
   logic [               2:0] s_rx_frame_error;
@@ -79,8 +78,7 @@ module ps2_core #(
       .async_i        ({ps2_dat_i, ps2_clk_i}),
       .stable_cycles_i(filter_cycles_i),
       .filtered_o     (s_filtered_lines),
-      .rise_o         (s_line_rise),
-      .fall_o         (s_line_fall)
+      .ps2_clk_fall_o (s_ps2_clk_fall)
   );
 
   ps2_rx u_ps2_rx (
@@ -88,7 +86,7 @@ module ps2_core #(
       .rst_n_i         (rst_n_i),
       .enable_i        (enable_i),
       .tx_active_i     (tx_active_o),
-      .ps2_clk_fall_i  (s_line_fall[0]),
+      .ps2_clk_fall_i  (s_ps2_clk_fall),
       .ps2_dat_i       (s_filtered_lines[1]),
       .timeout_cycles_i(frame_timeout_i),
       .active_o        (rx_active_o),
@@ -143,7 +141,7 @@ module ps2_core #(
       .data_pop_o      (s_tx_pop),
       .ps2_clk_i       (s_filtered_lines[0]),
       .ps2_dat_i       (s_filtered_lines[1]),
-      .ps2_clk_fall_i  (s_line_fall[0]),
+      .ps2_clk_fall_i  (s_ps2_clk_fall),
       .inhibit_cycles_i(inhibit_cycles_i),
       .timeout_cycles_i(frame_timeout_i),
       .clk_drive_low_o (s_tx_clk_drive_low),
