@@ -152,6 +152,23 @@ module ps2_tb;
       $fatal(1, "valid RX frame mismatch: %h", value);
     end
 
+    u_device.send_byte(8'h76, 3'b000);
+    u_device.send_byte(8'h0F, 3'b000);
+    u_device.send_byte(8'h76, 3'b000);
+    repeat (10) @(negedge clk);
+    apb_read(`PS2_RXDATA_OFFSET, value, 1'b0);
+    if (!value[15] || (value[7:0] != 8'h76) || (value[23:16] != 8'd3)) begin
+      $fatal(1, "first multi-byte RX entry mismatch: %h", value);
+    end
+    apb_read(`PS2_RXDATA_OFFSET, value, 1'b0);
+    if (!value[15] || (value[7:0] != 8'h0F) || (value[23:16] != 8'd2)) begin
+      $fatal(1, "second multi-byte RX entry mismatch: %h", value);
+    end
+    apb_read(`PS2_RXDATA_OFFSET, value, 1'b0);
+    if (!value[15] || (value[7:0] != 8'h76) || (value[23:16] != 8'd1)) begin
+      $fatal(1, "third multi-byte RX entry mismatch: %h", value);
+    end
+
     u_device.send_byte(8'h55, 3'b010);
     repeat (10) @(negedge clk);
     apb_read(`PS2_RXDATA_OFFSET, value, 1'b0);
